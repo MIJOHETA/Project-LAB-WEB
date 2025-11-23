@@ -2,25 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Medicine extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'nama_obat',
-        'deskripsi',
-        'tipe_obat',
-        'stok',
-        'gambar_obat',
+        'name',
+        'description',
+        'type', 
+        'stock',
+        'price',
+        'image'
     ];
 
-    public function prescriptions()
+    public function medicalRecords()
     {
-        return $this->hasMany(Prescription::class);
-    }
-
-    public function isAvailable()
-    {
-        return $this->stok > 0;
+        return $this->belongsToMany(MedicalRecord::class, 'medical_record_medicine')
+                    ->withPivot('quantity', 'instruction')
+                    ->withTimestamps();
     }
 }

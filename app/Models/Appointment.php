@@ -2,27 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'patient_id',
+        'user_id',
         'doctor_id',
-        'schedule_id',
-        'tanggal_booking',
-        'keluhan_singkat',
-        'status',
-        'rejection_reason',
+        'appointment_date',
+        'complaint', 
+        'status', 
+        'admin_note'
     ];
 
-    protected $casts = [
-        'tanggal_booking' => 'date',
-    ];
-
-    public function patient()
+    public function user()
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(User::class);
     }
 
     public function doctor()
@@ -30,23 +28,8 @@ class Appointment extends Model
         return $this->belongsTo(Doctor::class);
     }
 
-    public function schedule()
-    {
-        return $this->belongsTo(Schedule::class);
-    }
-
     public function medicalRecord()
     {
         return $this->hasOne(MedicalRecord::class);
-    }
-
-    public function isPending()
-    {
-        return $this->status === 'pending';
-    }
-
-    public function isApproved()
-    {
-        return $this->status === 'approved';
     }
 }

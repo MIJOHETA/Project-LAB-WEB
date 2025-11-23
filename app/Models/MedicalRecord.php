@@ -2,22 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class MedicalRecord extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'appointment_id',
-        'patient_id',
-        'doctor_id',
         'diagnosis',
-        'tindakan_medis',
-        'catatan',
-        'tanggal_konsultasi',
-    ];
-
-    protected $casts = [
-        'tanggal_konsultasi' => 'date',
+        'treatment',
     ];
 
     public function appointment()
@@ -25,18 +20,10 @@ class MedicalRecord extends Model
         return $this->belongsTo(Appointment::class);
     }
 
-    public function patient()
+    public function medicines()
     {
-        return $this->belongsTo(Patient::class);
-    }
-
-    public function doctor()
-    {
-        return $this->belongsTo(Doctor::class);
-    }
-
-    public function prescriptions()
-    {
-        return $this->hasMany(Prescription::class);
+        return $this->belongsToMany(Medicine::class, 'medical_record_medicine')
+                    ->withPivot('quantity', 'instruction')
+                    ->withTimestamps();
     }
 }

@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Poli extends Model
 {
-    protected $fillable = [
-        'nama_poli',
-        'deskripsi',
-        'icon_image',
-    ];
+    use HasFactory;
+
+    protected $fillable = ['name', 'description', 'image'];
 
     public function doctors()
     {

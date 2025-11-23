@@ -2,17 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Doctor extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'poli_id',
-        'specialization',
-        'phone',
-        'profile_image',
-    ];
+    use HasFactory;
+
+    protected $fillable = ['user_id', 'poli_id', 'sip'];
 
     public function user()
     {
@@ -27,15 +24,5 @@ class Doctor extends Model
     public function schedules()
     {
         return $this->hasMany(Schedule::class);
-    }
-
-    public function appointments()
-    {
-        return $this->hasMany(Appointment::class);
-    }
-
-    public function medicalRecords()
-    {
-        return $this->hasMany(MedicalRecord::class);
     }
 }
