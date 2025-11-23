@@ -12,9 +12,46 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                    
+                    <!-- MENU ADMIN -->
+                    @if(auth()->user()->role === 'admin')
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
+                            {{ __('Dashboard Admin') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            {{ __('Kelola User') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.polis.index')" :active="request()->routeIs('admin.polis.*')">
+                            {{ __('Kelola Poli') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.medicines.index')" :active="request()->routeIs('admin.medicines.*')">
+                            {{ __('Data Obat') }}
+                        </x-nav-link>
+                    @endif
+
+                    <!-- MENU DOKTER -->
+                    @if(auth()->user()->role === 'dokter')
+                        <x-nav-link :href="route('dokter.dashboard')" :active="request()->routeIs('dokter.dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('dokter.schedules.index')" :active="request()->routeIs('dokter.schedules.*')">
+                            {{ __('Jadwal Saya') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('dokter.appointments.index')" :active="request()->routeIs('dokter.appointments.*')">
+                            {{ __('Pasien Masuk') }}
+                        </x-nav-link>
+                    @endif
+
+                    <!-- MENU PASIEN -->
+                    @if(auth()->user()->role === 'pasien')
+                        <x-nav-link :href="route('pasien.dashboard')" :active="request()->routeIs('pasien.dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('appointment.create')" :active="request()->routeIs('appointment.create')">
+                            {{ __('Buat Janji') }}
+                        </x-nav-link>
+                    @endif
+
                 </div>
             </div>
 
@@ -23,7 +60,7 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+                            <div>{{ Auth::user()->name }} ({{ ucfirst(Auth::user()->role) }})</div>
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -52,7 +89,7 @@
                 </x-dropdown>
             </div>
 
-            <!-- Hamburger -->
+            <!-- Hamburger (Mobile) -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -87,7 +124,6 @@
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-
                     <x-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
