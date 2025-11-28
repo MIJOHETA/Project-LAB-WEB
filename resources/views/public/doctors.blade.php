@@ -83,7 +83,7 @@
                 </div>
 
                 <div class="mt-4 pt-4 border-t">
-                    <a href="{{ route('appointment.create', ['doctor_id' => $doc->id]) }}" class="block w-full bg-emerald-600 text-white text-center py-2.5 rounded-lg font-bold hover:bg-emerald-700 transition">
+                    <a href="{{ route('pasien.appointment.create', ['doctor_id' => $doc->id]) }}" class="block w-full bg-emerald-600 text-white text-center py-2.5 rounded-lg font-bold hover:bg-emerald-700 transition">
                         Buat Janji Temu
                     </a>
                 </div>
