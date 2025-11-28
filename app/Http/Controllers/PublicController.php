@@ -5,11 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Poli;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // Pastikan ini ada
 
 class PublicController extends Controller
 {
     public function index()
     {
+        // LOGIKA PERBAIKAN:
+        // Jika user sudah login (sebagai Dokter/Admin/Pasien) dan buka halaman depan,
+        // Lempar langsung ke Dashboard masing-masing.
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+
+        // Jika belum login (Tamu), tampilkan halaman depan seperti biasa
         $polis = Poli::withCount('doctors')->take(6)->get();
         $doctors = Doctor::with(['user', 'poli'])->take(8)->get();
         

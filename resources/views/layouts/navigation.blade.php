@@ -47,7 +47,7 @@
                         <x-nav-link :href="route('pasien.dashboard')" :active="request()->routeIs('pasien.dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('appointment.create')" :active="request()->routeIs('appointment.create')">
+                        <x-nav-link :href="route('pasien.appointment.create')" :active="request()->routeIs('pasien.appointment.create')">
                             {{ __('Buat Janji') }}
                         </x-nav-link>
                     @endif
