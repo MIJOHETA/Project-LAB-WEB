@@ -20,9 +20,19 @@ class PatientController extends Controller
         return view('pasien.dashboard', compact('appointments'));
     }
 
-    public function createAppointment(Request $request)
+   public function createAppointment(Request $request)
     {
+        // 1. Ambil ID Dokter dari URL
         $doctorId = $request->query('doctor_id');
+        
+        // 2. CEK KEAMANAN: Jika ID tidak ada, jangan biarkan masuk!
+        if (!$doctorId) {
+            // Kembalikan user ke halaman cari dokter
+            return redirect()->route('public.doctors')->with('error', 'Silakan pilih dokter yang ingin dituju terlebih dahulu.');
+        }
+
+        // 3. Jika ID ada, baru cari datanya
+        // Gunakan findOrFail agar jika ID ngawur (misal: 99999), tetap 404 (aman)
         $doctor = Doctor::with(['user', 'poli', 'schedules'])->findOrFail($doctorId);
         
         return view('pasien.create-appointment', compact('doctor'));

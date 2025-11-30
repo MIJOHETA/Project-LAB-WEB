@@ -9,7 +9,8 @@ class Doctor extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'poli_id', 'sip'];
+    // Pastikan 'photo' tetap ada di fillable
+    protected $fillable = ['user_id', 'poli_id', 'sip', 'photo'];
 
     public function user()
     {
@@ -24,5 +25,11 @@ class Doctor extends Model
     public function schedules()
     {
         return $this->hasMany(Schedule::class);
+    }
+
+    // 👇 TAMBAHKAN FUNGSI RELASI INI 👇
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
     }
 }

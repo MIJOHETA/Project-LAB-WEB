@@ -1,10 +1,29 @@
 <x-app-layout>
-    <x-slot name="header">
+   <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-emerald-800 leading-tight">
-                {{ __('Dashboard Dokter') }}
-            </h2>
-            <span class="text-sm text-gray-500">Selamat bertugas, Dr. {{ Auth::user()->name }}</span>
+            
+            <div class="flex items-center gap-4">
+                <img src="{{ asset('images/logo-rs.png') }}" alt="Logo RS" class="h-12 w-auto">
+                
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    {{ __('Dashboard Dokter') }}
+                </h2>
+            </div>
+
+            <a href="{{ route('dokter.profile.edit') }}" class="flex items-center gap-3 hover:bg-gray-100 p-2 rounded-lg transition">
+                <div class="text-right hidden sm:block">
+                    <div class="text-sm font-bold text-gray-800">{{ Auth::user()->name }}</div>
+                    <div class="text-xs text-emerald-600 font-semibold">{{ Auth::user()->doctor->poli->name ?? 'Dokter' }}</div>
+                </div>
+                @if(Auth::user()->doctor && Auth::user()->doctor->photo)
+                    <img src="{{ asset('storage/' . Auth::user()->doctor->photo) }}" class="w-10 h-10 rounded-full object-cover border border-emerald-500">
+                @else
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                @endif
+            </a>
+            
         </div>
     </x-slot>
 
