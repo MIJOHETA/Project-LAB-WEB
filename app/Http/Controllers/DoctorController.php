@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage; // Wajib import ini
 use App\Models\Schedule;
 use App\Models\Appointment;
 use App\Models\MedicalRecord;
@@ -11,42 +12,99 @@ use App\Models\Medicine;
 
 class DoctorController extends Controller
 {
-    /**
-     * Menampilkan Dashboard Dokter
-     */
     public function dashboard()
     {
-        // Ambil data dokter dari user yang sedang login
         $user = Auth::user();
-        
-        // Pastikan user ini benar-benar punya data dokter
-        if (!$user->doctor) {
-            return redirect()->route('home')->with('error', 'Data profil dokter tidak ditemukan.');
-        }
 
-        // Contoh data untuk dashboard
+        // --- LOGIKA ANTI-ERROR ---
+        // Jika User ini Dokter tapi belum punya data di tabel 'doctors'
+        if (!$user->doctor) {
+            // 1. Pastikan minimal ada 1 Poli
+            $poli = \App\Models\Poli::first();
+            if (!$poli) {
+                $poli = \App\Models\Poli::create([
+                    'name' => 'Poli Umum', 
+                    'description' => 'Poli Default'
+                ]);
+            }
+
+            // 2. Buat Data Dokter Dummy Otomatis
+            \App\Models\Doctor::create([
+                'user_id' => $user->id,
+                'poli_id' => $poli->id,
+                'sip'     => 'SIP-AUTO-' . rand(1000,9999)
+            ]);
+            
+            // 3. Refresh user agar relasinya terbaca
+            $user = $user->fresh();
+        }
+        // -------------------------
+
         $appointmentsToday = Appointment::where('doctor_id', $user->doctor->id)
                                         ->whereDate('appointment_date', now())
                                         ->count();
 
-        // Pastikan Anda sudah membuat view: resources/views/dokter/dashboard.blade.php
-        return view('dokter.dashboard', compact('appointmentsToday'));
+        // Kirim data lengkap ke view agar tidak error 'undefined variable'
+        $todayAppointments = Appointment::where('doctor_id', $user->doctor->id)
+                                        ->whereDate('appointment_date', now())
+                                        ->get();
+        
+        $pendingAppointments = Appointment::where('doctor_id', $user->doctor->id)
+                                        ->where('status', 'pending')
+                                        ->count();
+
+        return view('dokter.dashboard', compact('appointmentsToday', 'todayAppointments', 'pendingAppointments', 'user'));
     }
 
-    /**
-     * Menampilkan Halaman Jadwal (Schedules)
-     */
+    // --- FITUR BARU: EDIT PROFILE & FOTO ---
+    public function editProfile()
+    {
+        $user = Auth::user();
+        $doctor = $user->doctor;
+        return view('dokter.profile', compact('user', 'doctor'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        $doctor = $user->doctor;
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:15',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi foto max 2MB
+        ]);
+
+        // 1. Update Tabel Users (Nama & HP)
+        $user->update([
+            'name' => $request->name,
+            'phone' => $request->phone,
+        ]);
+
+        // 2. Handle Upload Foto ke Tabel Doctors
+        if ($request->hasFile('photo')) {
+            // Hapus foto lama jika ada
+            if ($doctor->photo && Storage::disk('public')->exists($doctor->photo)) {
+                Storage::disk('public')->delete($doctor->photo);
+            }
+
+            // Simpan foto baru ke folder 'doctors_photos'
+            $path = $request->file('photo')->store('doctors_photos', 'public');
+            
+            $doctor->update(['photo' => $path]);
+        }
+
+        return back()->with('success', 'Profil berhasil diperbarui.');
+    }
+    // ---------------------------------------
+
     public function indexSchedules()
     {
         $doctor = Auth::user()->doctor;
         $schedules = Schedule::where('doctor_id', $doctor->id)->get();
-        
         return view('dokter.schedules.index', compact('schedules'));
     }
 
-    /**
-     * Menyimpan Jadwal Baru
-     */
     public function storeSchedule(Request $request)
     {
         $request->validate([
@@ -63,18 +121,13 @@ class DoctorController extends Controller
             'is_active' => true
         ]);
 
-        return back()->with('success', 'Jadwal berhasil ditambahkan.');
+        return back()->with('success', 'Jadwal ditambahkan.');
     }
 
-    /**
-     * Menampilkan Daftar Janji Temu Pasien (Appointments)
-     */
     public function indexAppointments()
     {
         $doctor = Auth::user()->doctor;
-        
-        // Ambil janji temu milik dokter ini
-        $appointments = Appointment::with('user') // load data pasien
+        $appointments = Appointment::with('user')
                             ->where('doctor_id', $doctor->id)
                             ->orderBy('appointment_date', 'asc')
                             ->get();
@@ -82,43 +135,27 @@ class DoctorController extends Controller
         return view('dokter.appointments.index', compact('appointments'));
     }
 
-    /**
-     * Update Status Janji Temu (Misal: dari 'pending' ke 'processed')
-     */
     public function updateAppointmentStatus(Request $request, $id)
     {
         $appointment = Appointment::findOrFail($id);
-        
-        // Validasi status
-        $request->validate([
-            'status' => 'required|in:scheduled,completed,cancelled'
-        ]);
-
+        $request->validate(['status' => 'required']);
         $appointment->update(['status' => $request->status]);
-
-        return back()->with('success', 'Status janji temu diperbarui.');
+        return back()->with('success', 'Status diperbarui.');
     }
 
-    /**
-     * Form Rekam Medis (Medical Record)
-     */
     public function createMedicalRecord($id)
     {
         $appointment = Appointment::with('user')->findOrFail($id);
-        $medicines = Medicine::all(); // Untuk pilihan obat
-
+        $medicines = Medicine::all();
         return view('dokter.records.create', compact('appointment', 'medicines'));
     }
 
-    /**
-     * Simpan Rekam Medis
-     */
     public function storeMedicalRecord(Request $request, $id)
     {
         $request->validate([
-            'diagnosis' => 'required|string',
-            'treatment' => 'required|string',
-            'medicines' => 'array', // Array ID obat
+            'diagnosis' => 'required',
+            'treatment' => 'required',
+            'medicines' => 'array',
         ]);
 
         $record = MedicalRecord::create([
@@ -127,15 +164,13 @@ class DoctorController extends Controller
             'treatment' => $request->treatment,
         ]);
 
-        // Simpan relasi obat jika ada
         if ($request->has('medicines')) {
             $record->medicines()->attach($request->medicines);
         }
 
-        // Update status appointment jadi selesai
         $appointment = Appointment::find($id);
         $appointment->update(['status' => 'completed']);
 
-        return redirect()->route('dokter.appointments.index')->with('success', 'Rekam medis berhasil disimpan.');
+        return redirect()->route('dokter.appointments.index')->with('success', 'Rekam medis tersimpan.');
     }
 }

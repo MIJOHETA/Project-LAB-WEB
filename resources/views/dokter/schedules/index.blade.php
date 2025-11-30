@@ -1,8 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Jadwal Praktek Saya') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            
+            <div class="flex items-center gap-4">
+                <img src="{{ asset('images/logo-rs.png') }}" alt="Logo RS" class="h-12 w-auto">
+                
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    {{ __('Jadwal Praktek') }}
+                </h2>
+            </div>
     </x-slot>
 
     <div class="py-12">

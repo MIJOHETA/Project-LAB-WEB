@@ -26,8 +26,7 @@ class RoleMiddleware
             return $next($request);
         }
 
-        // 3. Jika tidak cocok, tampilkan 403 Forbidden (Bukan 404)
-        // Ini membantu membedakan antara "Halaman Hilang" vs "Salah Role"
+        // 3. Jika tidak cocok, tampilkan 403 Forbidden
         abort(403, 'Akses Ditolak. Role Anda (' . $user->role . ') tidak memiliki izin.');
     }
 }

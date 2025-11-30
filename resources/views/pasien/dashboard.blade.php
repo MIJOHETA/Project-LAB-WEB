@@ -1,8 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard Pasien') }}
-        </h2>
+       <div class="flex justify-between items-center">
+            
+            <div class="flex items-center gap-4">
+                <img src="{{ asset('images/logo-rs.png') }}" alt="Logo RS" class="h-12 w-auto">
+                
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    {{ __('Dashboard Pasien') }}
+                </h2>
+            </div>
     </x-slot>
 
     <div class="py-12">
@@ -18,6 +24,18 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Pesan Sukses/Error -->
+            @if(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             <!-- Riwayat Janji Temu -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -48,15 +66,37 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($app->status == 'pending')
                                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
+                                        
                                         @elseif($app->status == 'approved')
                                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Disetujui</span>
+                                        
                                         @elseif($app->status == 'rejected')
                                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>
                                             @if($app->admin_note)
                                                 <div class="text-xs text-red-500 mt-1">Note: {{ $app->admin_note }}</div>
                                             @endif
+                                        
                                         @elseif($app->status == 'completed')
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>
+                                            <div class="flex flex-col gap-2">
+                                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 text-center">
+                                                    Selesai
+                                                </span>
+                                                
+                                                <!-- CEK: Apakah sudah memberi ulasan? -->
+                                                @php
+                                                    // Cek apakah feedback sudah ada untuk appointment ini
+                                                    // Menggunakan namespace lengkap App\Models\Feedback
+                                                    $hasFeedback = \App\Models\Feedback::where('appointment_id', $app->id)->exists();
+                                                @endphp
+
+                                                @if(!$hasFeedback)
+                                                    <a href="{{ route('pasien.feedback.create', $app->id) }}" class="text-center bg-yellow-400 hover:bg-yellow-500 text-white text-xs font-bold py-1 px-2 rounded shadow transition">
+                                                        ★ Beri Ulasan
+                                                    </a>
+                                                @else
+                                                    <span class="text-xs text-gray-400 text-center italic">Ulasan Terkirim</span>
+                                                @endif
+                                            </div>
                                         @endif
                                     </td>
                                 </tr>

@@ -5,20 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Poli;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // Pastikan ini ada
+use Illuminate\Support\Facades\Auth;
 
 class PublicController extends Controller
 {
     public function index()
     {
-        // LOGIKA PERBAIKAN:
-        // Jika user sudah login (sebagai Dokter/Admin/Pasien) dan buka halaman depan,
-        // Lempar langsung ke Dashboard masing-masing.
-        if (Auth::check()) {
-            return redirect()->route('dashboard');
-        }
+        // --- BAGIAN INI KITA MATIKAN/HAPUS ---
+        // if (Auth::check()) {
+        //     return redirect()->route('dashboard');
+        // }
+        // -------------------------------------
 
-        // Jika belum login (Tamu), tampilkan halaman depan seperti biasa
+        // Kode asli untuk menampilkan halaman depan
         $polis = Poli::withCount('doctors')->take(6)->get();
         $doctors = Doctor::with(['user', 'poli'])->take(8)->get();
         
@@ -35,12 +34,10 @@ class PublicController extends Controller
     {
         $query = Doctor::with(['user', 'poli', 'schedules']);
 
-        // Filter by poli
         if ($request->has('poli_id')) {
             $query->where('poli_id', $request->poli_id);
         }
 
-        // Search by name
         if ($request->has('search')) {
             $query->whereHas('user', function($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%');
